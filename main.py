@@ -12,7 +12,7 @@ class VideoDownloader:
             'quiet': True,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['android']
+                    'player_client': ['web', 'ios']
                 }
             }
         }
@@ -82,7 +82,7 @@ class VideoDownloader:
             'progress_hooks': [progress_hook],
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['android']
+                    'player_client': ['web', 'ios']
                 }
             }
         }
