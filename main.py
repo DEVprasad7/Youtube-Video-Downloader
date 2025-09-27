@@ -10,7 +10,9 @@ class VideoDownloader:
     
     def get_video_info(self, url):
         ydl_opts = {
-            'quiet': True
+            'quiet': True,
+            'format': 'worst/best',
+            'no_warnings': True
         }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -76,7 +78,9 @@ class VideoDownloader:
             'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
             'noplaylist': True,
             'progress_hooks': [progress_hook],
-            'format': 'worst[ext=mp4]/worst'  # Use lowest quality to avoid 403 errors
+            'format': 'worst/best',
+            'no_warnings': True,
+            'ignoreerrors': True
         }
         
         if audio_only:
@@ -140,6 +144,9 @@ def main():
     
     st.title("📹 YouTube Video Downloader")
     st.write("Download videos from YouTube and other platforms")
+    
+    # Notice about YouTube restrictions
+    st.warning("⚠️ **Notice**: YouTube has implemented strict anti-bot measures. Some videos may not be downloadable due to these restrictions. Try different videos or use the app locally for better results.")
     
     downloader = VideoDownloader()
     
