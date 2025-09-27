@@ -9,12 +9,7 @@ class VideoDownloader:
     
     def get_video_info(self, url):
         ydl_opts = {
-            'quiet': True,
-            'extractor_args': {
-                'youtube': {
-                    'player_client': ['web', 'ios']
-                }
-            }
+            'quiet': True
         }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -79,12 +74,7 @@ class VideoDownloader:
         ydl_opts = {
             'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
             'noplaylist': True,
-            'progress_hooks': [progress_hook],
-            'extractor_args': {
-                'youtube': {
-                    'player_client': ['web', 'ios']
-                }
-            }
+            'progress_hooks': [progress_hook]
         }
         
         if audio_only:
