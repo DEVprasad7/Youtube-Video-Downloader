@@ -1,6 +1,7 @@
 import streamlit as st
 import yt_dlp
 import os
+import tempfile
 from pathlib import Path
 
 class VideoDownloader:
@@ -74,7 +75,8 @@ class VideoDownloader:
         ydl_opts = {
             'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
             'noplaylist': True,
-            'progress_hooks': [progress_hook]
+            'progress_hooks': [progress_hook],
+            'format': 'worst[ext=mp4]/worst'  # Use lowest quality to avoid 403 errors
         }
         
         if audio_only:
@@ -252,9 +254,9 @@ def main():
         estimated_size = estimate_file_size(info.get('formats', []), quality)
         st.info(f"💾 Estimated file size: {estimated_size}")
             
-        # Download path
-        download_path = str(Path.home() / "Downloads")
-        st.info(f"💻 Files will be saved to: {download_path}")
+        # Download path - use temp directory for server deployment
+        download_path = tempfile.mkdtemp()
+        st.info(f"💻 Processing video for download...")
         st.markdown('</div>', unsafe_allow_html=True)
             
         # Download button
@@ -263,7 +265,6 @@ def main():
             download_clicked = st.button("📥 Download", type="primary")
         
         if download_clicked:
-            os.makedirs(download_path, exist_ok=True)
             st.session_state.stop_download = False
             
             # Show active stop button during download
@@ -276,7 +277,22 @@ def main():
             
             if success and not st.session_state.stop_download:
                 st.success("✅ Download completed!")
-                st.info(f"💻 File saved to: {download_path}")
+                
+                # Find the downloaded file and offer it for download
+                files = os.listdir(download_path)
+                if files:
+                    file_path = os.path.join(download_path, files[0])
+                    with open(file_path, 'rb') as f:
+                        file_data = f.read()
+                    
+                    st.download_button(
+                        label="📥 Download File",
+                        data=file_data,
+                        file_name=files[0],
+                        mime="video/mp4"
+                    )
+                else:
+                    st.error("File not found after download")
             elif st.session_state.stop_download:
                 st.warning("❌ Download cancelled by user")
     
