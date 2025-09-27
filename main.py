@@ -12,10 +12,12 @@ class VideoDownloader:
             'quiet': True,
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'referer': 'https://www.youtube.com/',
+            'cookiesfrombrowser': ('chrome',),
             'extractor_args': {
                 'youtube': {
                     'skip': ['dash', 'hls'],
-                    'player_skip': ['configs', 'webpage']
+                    'player_skip': ['configs', 'webpage'],
+                    'player_client': ['android', 'web']
                 }
             },
             'http_headers': {
@@ -27,6 +29,19 @@ class VideoDownloader:
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
+        except Exception as e:
+            # Fallback without cookies for server deployment
+            if 'cookies' in str(e).lower() or 'bot' in str(e).lower():
+                ydl_opts_fallback = ydl_opts.copy()
+                ydl_opts_fallback.pop('cookiesfrombrowser', None)
+                ydl_opts_fallback['extractor_args']['youtube']['player_client'] = ['android']
+                try:
+                    with yt_dlp.YoutubeDL(ydl_opts_fallback) as ydl:
+                        info = ydl.extract_info(url, download=False)
+                except:
+                    return None
+            else:
+                return None
                 
                 # Get available formats
                 formats = info.get('formats', [])
@@ -51,8 +66,7 @@ class VideoDownloader:
                     'thumbnail': info.get('thumbnail', None),
                     'formats': formats
                 }
-        except Exception as e:
-            return None
+
     
     def download_video(self, url, download_path, quality='best', audio_only=False):
         # Progress tracking
@@ -89,10 +103,12 @@ class VideoDownloader:
             'progress_hooks': [progress_hook],
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'referer': 'https://www.youtube.com/',
+            'cookiesfrombrowser': ('chrome',),
             'extractor_args': {
                 'youtube': {
                     'skip': ['dash', 'hls'],
-                    'player_skip': ['configs', 'webpage']
+                    'player_skip': ['configs', 'webpage'],
+                    'player_client': ['android', 'web']
                 }
             },
             'http_headers': {
@@ -118,10 +134,25 @@ class VideoDownloader:
                 ydl.download([url])
             return True
         except Exception as e:
-            if "cancelled by user" in str(e):
+            # Fallback without cookies
+            if 'cookies' in str(e).lower() or 'bot' in str(e).lower():
+                ydl_opts_fallback = ydl_opts.copy()
+                ydl_opts_fallback.pop('cookiesfrombrowser', None)
+                ydl_opts_fallback['extractor_args']['youtube']['player_client'] = ['android']
+                try:
+                    with yt_dlp.YoutubeDL(ydl_opts_fallback) as ydl:
+                        ydl.download([url])
+                    return True
+                except Exception as fallback_error:
+                    if "cancelled by user" in str(fallback_error):
+                        return False
+                    st.error(f"Download failed: {str(fallback_error)}")
+                    return False
+            else:
+                if "cancelled by user" in str(e):
+                    return False
+                st.error(f"Download failed: {str(e)}")
                 return False
-            st.error(f"Download failed: {str(e)}")
-            return False
 
 
 
