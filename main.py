@@ -1,7 +1,6 @@
 import streamlit as st
 import yt_dlp
 import os
-import tempfile
 from pathlib import Path
 
 class VideoDownloader:
@@ -9,11 +8,7 @@ class VideoDownloader:
         self.supported_qualities = ['2160p', '1440p', '1080p', '720p', '480p', '360p', '240p', '144p']
     
     def get_video_info(self, url):
-        ydl_opts = {
-            'quiet': True,
-            'format': 'worst/best',
-            'no_warnings': True
-        }
+        ydl_opts = {'quiet': True}
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
@@ -43,7 +38,6 @@ class VideoDownloader:
                 }
         except Exception as e:
             return None
-
     
     def download_video(self, url, download_path, quality='best', audio_only=False):
         # Progress tracking
@@ -78,9 +72,6 @@ class VideoDownloader:
             'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
             'noplaylist': True,
             'progress_hooks': [progress_hook],
-            'format': 'worst/best',
-            'no_warnings': True,
-            'ignoreerrors': True
         }
         
         if audio_only:
@@ -144,9 +135,6 @@ def main():
     
     st.title("📹 YouTube Video Downloader")
     st.write("Download videos from YouTube and other platforms")
-    
-    # Notice about YouTube restrictions
-    st.warning("⚠️ **Notice**: YouTube has implemented strict anti-bot measures. Some videos may not be downloadable due to these restrictions. Try different videos or use the app locally for better results.")
     
     downloader = VideoDownloader()
     
@@ -261,9 +249,9 @@ def main():
         estimated_size = estimate_file_size(info.get('formats', []), quality)
         st.info(f"💾 Estimated file size: {estimated_size}")
             
-        # Download path - use temp directory for server deployment
-        download_path = tempfile.mkdtemp()
-        st.info(f"💻 Processing video for download...")
+        # Download path
+        download_path = str(Path.home() / "Downloads")
+        st.info(f"💻 Files will be saved to: {download_path}")
         st.markdown('</div>', unsafe_allow_html=True)
             
         # Download button
@@ -272,6 +260,7 @@ def main():
             download_clicked = st.button("📥 Download", type="primary")
         
         if download_clicked:
+            os.makedirs(download_path, exist_ok=True)
             st.session_state.stop_download = False
             
             # Show active stop button during download
@@ -284,22 +273,7 @@ def main():
             
             if success and not st.session_state.stop_download:
                 st.success("✅ Download completed!")
-                
-                # Find the downloaded file and offer it for download
-                files = os.listdir(download_path)
-                if files:
-                    file_path = os.path.join(download_path, files[0])
-                    with open(file_path, 'rb') as f:
-                        file_data = f.read()
-                    
-                    st.download_button(
-                        label="📥 Download File",
-                        data=file_data,
-                        file_name=files[0],
-                        mime="video/mp4"
-                    )
-                else:
-                    st.error("File not found after download")
+                st.info(f"💻 File saved to: {download_path}")
             elif st.session_state.stop_download:
                 st.warning("❌ Download cancelled by user")
     
