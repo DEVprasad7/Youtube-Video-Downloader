@@ -10,8 +10,19 @@ class VideoDownloader:
     def get_video_info(self, url):
         ydl_opts = {
             'quiet': True,
-            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'extractor_args': {'youtube': {'skip': ['dash', 'hls']}}
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'referer': 'https://www.youtube.com/',
+            'extractor_args': {
+                'youtube': {
+                    'skip': ['dash', 'hls'],
+                    'player_skip': ['configs', 'webpage']
+                }
+            },
+            'http_headers': {
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-us,en;q=0.5',
+                'Sec-Fetch-Mode': 'navigate'
+            }
         }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -76,9 +87,19 @@ class VideoDownloader:
             'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
             'noplaylist': True,
             'progress_hooks': [progress_hook],
-            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'extractor_args': {'youtube': {'skip': ['dash', 'hls']}},
-            'format_sort': ['res:720', 'ext:mp4:m4a']
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'referer': 'https://www.youtube.com/',
+            'extractor_args': {
+                'youtube': {
+                    'skip': ['dash', 'hls'],
+                    'player_skip': ['configs', 'webpage']
+                }
+            },
+            'http_headers': {
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-us,en;q=0.5',
+                'Sec-Fetch-Mode': 'navigate'
+            }
         }
         
         if audio_only:
