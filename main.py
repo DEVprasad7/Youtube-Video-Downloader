@@ -8,7 +8,11 @@ class VideoDownloader:
         self.supported_qualities = ['2160p', '1440p', '1080p', '720p', '480p', '360p', '240p', '144p']
     
     def get_video_info(self, url):
-        ydl_opts = {'quiet': True}
+        ydl_opts = {
+            'quiet': True,
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'extractor_args': {'youtube': {'skip': ['dash', 'hls']}}
+        }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
@@ -72,6 +76,9 @@ class VideoDownloader:
             'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
             'noplaylist': True,
             'progress_hooks': [progress_hook],
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'extractor_args': {'youtube': {'skip': ['dash', 'hls']}},
+            'format_sort': ['res:720', 'ext:mp4:m4a']
         }
         
         if audio_only:
